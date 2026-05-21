@@ -1,6 +1,6 @@
 // student-form.js
 import { requireAuth, db } from './auth.js';
-import { ref, push, set, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { ref, push, set, get, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
 if (!requireAuth()) {}
 
@@ -19,11 +19,83 @@ function hideLoader() {
   if (loader) setTimeout(() => loader.classList.add('hidden'), 300);
 }
 
+// ✅ QR Scanner Variables
+let html5QrCode = null;
+let scannerActive = false;
+const scanBtn = document.getElementById('startScannerBtn');
+const qrReader = document.getElementById('qr-reader');
+const qrStatus = document.getElementById('qr-status');
+const qrInput = document.getElementById('qrCodeInput');
+
+// ✅ QR Scanner Toggle Logic
+if (scanBtn) {
+  scanBtn.addEventListener('click', async () => {
+    if (scannerActive) {
+      if (html5QrCode) await html5QrCode.stop();
+      qrReader.style.display = 'none';
+      scanBtn.textContent = '📷 Scan QR';
+      scannerActive = false;
+      return;
+    }
+
+    qrReader.style.display = 'block';
+    scanBtn.textContent = '⏹ Stop';
+    scannerActive = true;
+    qrStatus.textContent = 'Point camera at QR code...';
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+    try {
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          qrInput.value = decodedText;
+          qrStatus.textContent = `✅ Scanned: ${decodedText}`;
+          html5QrCode.stop();
+          qrReader.style.display = 'none';
+          scanBtn.textContent = '📷 Scan QR';
+          scannerActive = false;
+        },
+        () => {} // Ignore scan errors (no QR found)
+      );
+    } catch (err) {
+      qrStatus.textContent = '❌ Camera access denied or not available.';
+      qrReader.style.display = 'none';
+      scanBtn.textContent = '📷 Scan QR';
+      scannerActive = false;
+    }
+  });
+}
+
+// ✅ Stop scanner when leaving page
+window.addEventListener('beforeunload', () => {
+  if (html5QrCode && scannerActive) html5QrCode.stop();
+});
+
 if (isEdit) {
   loadStudentData();
 } else {
   addSubjectField();
   hideLoader();
+}
+
+const deleteBtn = document.getElementById('deleteBtn');
+if (isEdit) {
+  deleteBtn.style.display = 'inline-block';
+  deleteBtn.onclick = async () => {
+    if (confirm('Are you sure you want to permanently delete this student?')) {
+      try {
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        await remove(ref(db, `centers/${centerId}/students/${studentId}`));
+        alert('Student deleted successfully!');
+        window.location.href = 'students.html';
+      } catch (err) {
+        alert('Error deleting student: ' + err.message);
+      } finally {
+        document.getElementById('loadingOverlay').classList.add('hidden');
+      }
+    }
+  };
 }
 
 async function loadStudentData() {
@@ -41,6 +113,9 @@ async function loadStudentData() {
       document.getElementById('email').value = s.email || '';
       document.getElementById('birthday').value = s.birthday || '';
       
+      // ✅ Load QR Code if exists
+      qrInput.value = s.qrCode || '';
+
       if (s.phone) {
         document.getElementById('phoneMom').value = s.phone.mom || '';
         document.getElementById('phoneDad').value = s.phone.dad || '';
@@ -60,6 +135,24 @@ async function loadStudentData() {
   }
 }
 
+function getHourOptions(selectedHour) {
+  let opts = '';
+  for (let i = 1; i <= 24; i++) {
+    const val = String(i).padStart(2, '0');
+    opts += `<option value="${val}" ${val === selectedHour ? 'selected' : ''}>${val}</option>`;
+  }
+  return opts;
+}
+
+function getMinuteOptions(selectedMin) {
+  let opts = '';
+  for (let i = 0; i < 60; i++) {
+    const val = String(i).padStart(2, '0');
+    opts += `<option value="${val}" ${val === selectedMin ? 'selected' : ''}>${val}</option>`;
+  }
+  return opts;
+}
+
 function addSubjectField(data = {}) {
   if (subjectCount >= 3) return alert('Maximum 3 subjects allowed');
   
@@ -67,13 +160,15 @@ function addSubjectField(data = {}) {
   const div = document.createElement('div');
   div.className = 'subject-entry';
 
-  // ✅ Clean, single template literal (NO fragmented backticks)
   div.innerHTML = `
     <div class="form-grid">
-      <select class="subject-name" required>
-        <option value="">Select Subject *</option>
-        ${SUBJECTS.map(s => `<option value="${s}" ${data.name === s ? 'selected' : ''}>${s}</option>`).join('')}
-      </select>
+      <div>
+        <label>Select Subject *</label>
+        <select class="subject-name" required>
+          <option value="">Select Subject *</option>
+          ${SUBJECTS.map(s => `<option value="${s}" ${data.name === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+      </div>
       <div>
         <label>Start Level *</label>
         <input type="text" class="start-level" placeholder="e.g. 7A" value="${data.startLevel || ''}" required>
@@ -108,12 +203,8 @@ function addSubjectField(data = {}) {
     addTimeslotField(timeslotsList);
   }
 
-  div.querySelector('.add-timeslot-btn').onclick = () => addTimeslotField(div.querySelector('.timeslots-list'));
-  
-  div.querySelector('.remove-subject').onclick = () => {
-    div.remove();
-    subjectCount--;
-  };
+  div.querySelector('.add-timeslot-btn').onclick = () => addTimeslotField(timeslotsList);
+  div.querySelector('.remove-subject').onclick = () => { div.remove(); subjectCount--; };
 
   div.querySelector('.subject-name').addEventListener('change', (e) => {
     const selected = e.target.value;
@@ -121,9 +212,7 @@ function addSubjectField(data = {}) {
     let hasConflict = false;
     if (selected === 'English ERP' || selected === 'English EFL') {
       allSelects.forEach(sel => {
-        if (sel !== e.target && (sel.value === 'English ERP' || sel.value === 'English EFL')) {
-          hasConflict = true;
-        }
+        if (sel !== e.target && (sel.value === 'English ERP' || sel.value === 'English EFL')) hasConflict = true;
       });
     }
     if (hasConflict) {
@@ -140,21 +229,19 @@ function addTimeslotField(timeslotsList, data = {}) {
   if (!timeslotsList) return;
   if (timeslotsList.children.length >= 6) return alert('Maximum 6 timeslots per subject');
 
-  // Parse time (defaults to 01:00 if empty/invalid)
-  let h = 1, m = 0;
+  let h = '01', m = '00';
   if (data.time) {
     const parts = data.time.split(':');
-    if (parts.length === 2) {
-      h = parseInt(parts[0], 10) || 1;
-      m = parseInt(parts[1], 10) || 0;
-    }
+    if (parts.length === 2) { h = parts[0]; m = parts[1]; }
   }
 
   const row = document.createElement('div');
   row.className = 'timeslot-row';
+  
   const dayOptions = DAYS.map(d => `<option value="${d}" ${data.day === d ? 'selected' : ''}>${d}</option>`).join('');
+  const hourOptions = getHourOptions(h);
+  const minuteOptions = getMinuteOptions(m);
 
-  // ✅ Custom 1-24h Military Time Picker
   row.innerHTML = `
     <div>
       <label>Day</label>
@@ -162,33 +249,14 @@ function addTimeslotField(timeslotsList, data = {}) {
     </div>
     <div>
       <label>Time (1-24h)</label>
-      <div class="custom-time-picker">
-        <input type="number" class="ts-hour" min="1" max="24" value="${h}" required>
-        <span class="time-sep">:</span>
-        <input type="number" class="ts-min" min="0" max="59" value="${String(m).padStart(2, '0')}" required>
+      <div style="display:flex; gap:0.5rem;">
+        <select class="ts-hour" required>${hourOptions}</select>
+        <span style="align-self:center; font-weight:bold;">:</span>
+        <select class="ts-min" required>${minuteOptions}</select>
       </div>
     </div>
     <button type="button" class="remove-ts-btn">×</button>
   `;
-
-  // Validation & UX
-  const hInput = row.querySelector('.ts-hour');
-  const mInput = row.querySelector('.ts-min');
-
-  hInput.addEventListener('input', () => {
-    let v = parseInt(hInput.value);
-    if (v > 24) hInput.value = 24;
-    if (v < 1 || isNaN(v)) hInput.value = 1;
-  });
-  mInput.addEventListener('input', () => {
-    let v = parseInt(mInput.value);
-    if (v > 59) mInput.value = 59;
-    if (v < 0 || isNaN(v)) mInput.value = 0;
-  });
-  mInput.addEventListener('blur', () => {
-    let v = parseInt(mInput.value);
-    if (!isNaN(v)) mInput.value = String(v).padStart(2, '0');
-  });
 
   row.querySelector('.remove-ts-btn').onclick = () => row.remove();
   timeslotsList.appendChild(row);
@@ -203,15 +271,16 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     return;
   }
 
+  // ✅ Stop scanner if active during save
+  if (html5QrCode && scannerActive) await html5QrCode.stop();
+
   const subjects = [];
   document.querySelectorAll('.subject-entry').forEach(entry => {
     const timeslots = [];
     entry.querySelectorAll('.timeslots-list .timeslot-row').forEach(row => {
-      const h = parseInt(row.querySelector('.ts-hour').value) || 1;
-      const m = parseInt(row.querySelector('.ts-min').value) || 0;
       timeslots.push({
         day: row.querySelector('.ts-day').value,
-        time: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+        time: `${row.querySelector('.ts-hour').value}:${row.querySelector('.ts-min').value}`
       });
     });
 
@@ -244,6 +313,7 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
       dad: document.getElementById('phoneDad').value,
       own: document.getElementById('phoneOwn').value
     },
+    qrCode: qrInput.value.trim() || '', // ✅ Save QR Code
     subjects: subjects,
     updatedAt: new Date().toISOString()
   };
@@ -253,8 +323,7 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
   }
 
   try {
-    const loader = document.getElementById('loadingOverlay');
-    loader.classList.remove('hidden');
+    document.getElementById('loadingOverlay').classList.remove('hidden');
     
     if (isEdit) {
       await set(ref(db, `centers/${centerId}/students/${studentId}`), studentData);
@@ -267,7 +336,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
   } catch (err) {
     alert('Error saving student: ' + err.message);
   } finally {
-    const loader = document.getElementById('loadingOverlay');
-    loader.classList.add('hidden');
+    document.getElementById('loadingOverlay').classList.add('hidden');
   }
 });

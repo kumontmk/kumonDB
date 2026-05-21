@@ -1,64 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#87CEEB">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Form - Kumon DB</title>
   <link rel="stylesheet" href="style.css">
+  <!-- ✅ QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body>
-  <div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-overlay hidden" id="loadingOverlay">
     <div class="loading-container">
       <div class="spinner"></div>
-      <p class="loading-text">Loading student details</p>
+      <div class="loading-text">Loading student details</div>
     </div>
   </div>
 
   <header>
-    <h1>✏️ <span id="formTitle">Add Student</span></h1>
-    <nav><a href="students.html">← Back to Students</a></nav>
+    <a href="students.html" class="back-btn">← Back to Students</a>
+    <h2>✏️ <span id="formTitle">Add Student</span></h2>
   </header>
-  
-  <main class="form-container">
+
+  <div class="form-container">
     <form id="studentForm">
-      <section>
-        <h3>Basic Information</h3>
-        <div class="form-grid">
-          <input type="text" id="studentNumber" placeholder="Student Number (Optional)">
-          <input type="text" id="nameEn" placeholder="Name (English) *" required>
-          <input type="text" id="nameCn" placeholder="Name (Chinese) *" required>
-          <input type="text" id="grade" placeholder="Grade *" required>
-          <input type="text" id="school" placeholder="School *" required>
-          <input type="text" id="address" placeholder="Address">
-          <input type="text" id="nationality" placeholder="Nationality">
-          <input type="email" id="email" placeholder="Email">
-          <input type="date" id="birthday" placeholder="Birthday">
+      <h3>Basic Information</h3>
+      <div class="form-grid">
+        <div>
+          <label>Student Number</label>
+          <input type="text" id="studentNumber" placeholder="e.g. 00123">
         </div>
-      </section>
-      
-      <section>
-        <h3>Contact Information</h3>
-        <div class="form-grid">
-          <input type="tel" id="phoneMom" placeholder="Phone (Mom)">
-          <input type="tel" id="phoneDad" placeholder="Phone (Dad)">
-          <input type="tel" id="phoneOwn" placeholder="Phone (Student)">
+        <div>
+          <label>Full Name (English) *</label>
+          <input type="text" id="nameEn" required>
         </div>
-      </section>
-      
-      <section>
-        <h3>Subjects (Max 3)</h3>
-        <div id="subjectsContainer"></div>
-        <button type="button" id="addSubjectBtn" class="secondary">+ Add Subject</button>
-        <p class="hint">💡 Note: English ERP & EFL cannot be together. Each subject supports up to 6 timeslots.</p>
-      </section>
-      
-      <div class="form-actions">
+        <div>
+          <label>Full Name (Chinese)</label>
+          <input type="text" id="nameCn">
+        </div>
+        <div>
+          <label>Grade</label>
+          <input type="text" id="grade" placeholder="e.g. P4">
+        </div>
+        <div>
+          <label>School</label>
+          <input type="text" id="school">
+        </div>
+        <div>
+          <label>Birthday</label>
+          <input type="date" id="birthday">
+        </div>
+        <div>
+          <label>Nationality</label>
+          <input type="text" id="nationality">
+        </div>
+      </div>
+
+      <h3>Contact Information</h3>
+      <div class="form-grid">
+        <div>
+          <label>Email</label>
+          <input type="email" id="email">
+        </div>
+        <div>
+          <label>Phone (Mom)</label>
+          <input type="tel" id="phoneMom">
+        </div>
+        <div>
+          <label>Phone (Dad)</label>
+          <input type="tel" id="phoneDad">
+        </div>
+        <div>
+          <label>Phone (Student)</label>
+          <input type="tel" id="phoneOwn">
+        </div>
+        <div>
+          <label>Address</label>
+          <input type="text" id="address">
+        </div>
+      </div>
+
+      <!-- ✅ NEW: QR Code Scanner Section -->
+      <h3>QR Code</h3>
+      <div class="form-grid">
+        <div style="grid-column: 1 / -1;">
+          <label>Student QR Code</label>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" id="qrCodeInput" placeholder="Scan or manually enter QR code" style="flex: 1;">
+            <button type="button" id="startScannerBtn" class="secondary">📷 Scan QR</button>
+          </div>
+          <div id="qr-reader" style="display: none; margin-top: 1rem; width: 100%; max-width: 400px; border-radius: 8px; overflow: hidden;"></div>
+          <div id="qr-status" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-light);"></div>
+        </div>
+      </div>
+
+      <h3>Subjects (Max 3)</h3>
+      <div id="subjectsContainer"></div>
+      <button type="button" id="addSubjectBtn" class="secondary" style="margin-top: 1rem;">+ Add Subject</button>
+
+      <div class="hint"> Note: English ERP & EFL cannot be together. Each subject supports up to 6 timeslots.</div>
+
+      <div class="form-actions" style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
         <button type="submit" class="primary">💾 Save Student</button>
-        <button type="button" onclick="window.location.href='students.html'">Cancel</button>
+        <a href="students.html" class="secondary">Cancel</a>
+        <button type="button" id="deleteBtn" class="danger" style="display: none; margin-left: auto;">️ Delete Student</button>
       </div>
     </form>
-  </main>
+  </div>
 
   <script type="module" src="student-form.js"></script>
 </body>
