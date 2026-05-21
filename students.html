@@ -5,9 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#87CEEB">
   <title>Students - Kumon DB</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- ✅ Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p class="loading-text">Loading students</p>
+    </div>
+  </div>
+
   <header>
     <h1>👥 Student Management</h1>
     <nav>
@@ -29,6 +37,14 @@
     </div>
   </main>
 
-  <script type="module" src="js/students.js"></script>
+  <!-- ✅ Module Script -->
+  <script type="module" src="students.js"></script>
+  <script type="module">
+    // Logout handler (local to this page as well)
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('kumonAuth');
+      window.location.href = 'index.html';
+    });
+  </script>
 </body>
 </html>
