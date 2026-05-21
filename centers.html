@@ -1,23 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="theme-color" content="#87CEEB">
   <title>Select Center - Kumon DB</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Loading Overlay -->
   <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-container">
-      <div class="spinner"></div>
-      <p class="loading-text">Loading centers</p>
-    </div>
+    <div class="loading-container"><div class="spinner"></div><p class="loading-text">Loading centers</p></div>
   </div>
 
   <header>
-    <h1>📚 Kumon Center DB</h1>
+    <h1>🏢 Centers</h1>
     <button id="logoutBtn">Logout</button>
   </header>
   
@@ -30,16 +26,13 @@
     import { requireAuth, db } from './auth.js';
     import { ref, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-    // Auth guard
-    if (!requireAuth()) { /* redirects automatically */ }
+    if (!requireAuth()) {}
 
-    // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
       sessionStorage.removeItem('kumonAuth');
       window.location.href = 'index.html';
     });
 
-    // Load Centers
     async function loadCenters() {
       const loader = document.getElementById('loadingOverlay');
       const container = document.getElementById('centerList');
@@ -57,10 +50,10 @@
           const center = child.val();
           const card = document.createElement('div');
           card.className = 'center-card';
-          card.innerHTML = `<h3>${center.name}</h3><p>Click to manage students & reports</p>`;
+          card.innerHTML = `<h3>${center.name}</h3><p>Click to manage center data</p>`;
           card.addEventListener('click', () => {
             sessionStorage.setItem('selectedCenter', center.id);
-            window.location.href = 'students.html';
+            window.location.href = 'dashboard.html'; // ✅ Redirects to new menu
           });
           container.appendChild(card);
         });
