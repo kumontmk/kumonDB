@@ -1,9 +1,11 @@
 import { requireAuth, db } from './auth.js';
 import { ref, push, set, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-if (!requireAuth()) { /* redirects automatically */ }
+if (!requireAuth()) {}
 
 const SUBJECTS = ['Math', 'Chinese', 'English ERP', 'English EFL'];
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
 let subjectCount = 0;
 const centerId = sessionStorage.getItem('selectedCenter');
 const studentId = new URLSearchParams(window.location.search).get('id');
@@ -16,11 +18,11 @@ function hideLoader() {
   if (loader) setTimeout(() => loader.classList.add('hidden'), 300);
 }
 
-// Load existing data if editing
+// ✅ Load Existing Data if Editing
 if (isEdit) {
   loadStudentData();
 } else {
-  addSubjectField(); // Add one empty subject by default
+  addSubjectField();
   hideLoader();
 }
 
@@ -43,6 +45,7 @@ async function loadStudentData() {
         document.getElementById('phoneDad').value = s.phone.dad || '';
         document.getElementById('phoneOwn').value = s.phone.own || '';
       }
+      
       if (s.subjects) {
         s.subjects.forEach(sub => addSubjectField(sub));
       } else {
@@ -56,6 +59,7 @@ async function loadStudentData() {
   }
 }
 
+// ✅ Add Subject Field
 function addSubjectField(data = {}) {
   if (subjectCount >= 3) return alert('Maximum 3 subjects allowed');
   
@@ -69,20 +73,51 @@ function addSubjectField(data = {}) {
         <option value="">Select Subject *</option>
         ${SUBJECTS.map(s => `<option value="${s}" ${data.name === s ? 'selected' : ''}>${s}</option>`).join('')}
       </select>
-      <input type="text" class="start-level" placeholder="Start Level *" value="${data.startLevel || ''}" required>
-      <input type="date" class="start-date" placeholder="Start Date *" value="${data.startDate || ''}" required>
-      <input type="text" class="timeslot" placeholder="Timeslot (e.g. Mon 4PM)" value="${data.timeslot || ''}" required>
-      <select class="status">
-        <option value="new" ${data.status === 'new' ? 'selected' : ''}>New</option>
-        <option value="current" ${data.status === 'current' ? 'selected' : ''} selected>Current</option>
-        <option value="pause" ${data.status === 'pause' ? 'selected' : ''}>Pause</option>
-        <option value="drop" ${data.status === 'drop' ? 'selected' : ''}>Drop</option>
-      </select>
+      <div>
+        <label>Start Level *</label>
+        <input type="text" class="start-level" placeholder="e.g. 7A" value="${data.startLevel || ''}" required>
+      </div>
+      <div>
+        <label>Start WS # *</label>
+        <input type="number" class="start-ws" placeholder="e.g. 10" value="${data.startWS || 0}" required>
+      </div>
+      <div>
+        <label>Status</label>
+        <select class="status">
+          <option value="new" ${data.status === 'new' ? 'selected' : ''}>New</option>
+          <option value="current" ${data.status === 'current' ? 'selected' : ''} selected>Current</option>
+          <option value="pause" ${data.status === 'pause' ? 'selected' : ''}>Pause</option>
+          <option value="drop" ${data.status === 'drop' ? 'selected' : ''}>Drop</option>
+        </select>
+      </div>
     </div>
-    <button type="button" class="remove-subject">🗑️ Remove</button>
+
+    <div class="timeslots-container">
+      <h4 style="font-size:0.9rem; margin:0 0 0.5rem;">Timeslots (Max 6)</h4>
+      <div class="timeslots-list"></div>
+      <button type="button" class="add-timeslot-btn secondary" style="margin-top:0.5rem; padding:0.4rem 0.8rem; font-size:0.9rem;">+ Add Timeslot</button>
+    </div>
+
+    <button type="button" class="remove-subject" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; margin-top:0.5rem;">🗑️ Remove Subject</button>
   `;
 
-  // Validation: ERP vs EFL conflict
+  // Initialize existing timeslots if editing
+  if (data.timeslots && data.timeslots.length > 0) {
+    data.timeslots.forEach(ts => addTimeslotField(div.querySelector('.timeslots-list'), ts));
+  } else {
+    addTimeslotField(div.querySelector('.timeslots-list')); // Add one empty by default
+  }
+
+  // ✅ Timeslot Button Handler
+  div.querySelector('.add-timeslot-btn').onclick = () => addTimeslotField(div.querySelector('.timeslots-list'));
+
+  // ✅ Remove Subject Handler
+  div.querySelector('.remove-subject').onclick = () => {
+    div.remove();
+    subjectCount--;
+  };
+
+  // ✅ ERP/EFL Validation
   div.querySelector('.subject-name').addEventListener('change', (e) => {
     const selected = e.target.value;
     const allSelects = document.querySelectorAll('.subject-name');
@@ -100,35 +135,68 @@ function addSubjectField(data = {}) {
     }
   });
 
-  div.querySelector('.remove-subject').onclick = () => {
-    div.remove();
-    subjectCount--;
-  };
-
   container.appendChild(div);
   subjectCount++;
 }
 
+// ✅ Add Timeslot Field
+function addTimeslotField(container, data = {}) {
+  const list = container.querySelector('.timeslots-list');
+  if (list.children.length >= 6) return alert('Maximum 6 timeslots per subject');
+  
+  const row = document.createElement('div');
+  row.className = 'timeslot-row';
+  
+  const dayOptions = DAYS.map(d => `<option value="${d}" ${data.day === d ? 'selected' : ''}>${d}</option>`).join('');
+  
+  row.innerHTML = `
+    <div>
+      <label>Day</label>
+      <select class="ts-day" required>${dayOptions}</select>
+    </div>
+    <div>
+      <label>Time</label>
+      <input type="text" class="ts-time" placeholder="e.g. 4:00 PM" value="${data.time || ''}" required>
+    </div>
+    <button type="button" class="remove-ts-btn">×</button>
+  `;
+  
+  row.querySelector('.remove-ts-btn').onclick = () => row.remove();
+  list.appendChild(row);
+}
+
 document.getElementById('addSubjectBtn').onclick = () => addSubjectField();
 
-// Form submission
+// ✅ Save Student
 document.getElementById('studentForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   
   const subjects = [];
   document.querySelectorAll('.subject-entry').forEach(entry => {
+    const timeslots = [];
+    entry.querySelectorAll('.timeslots-list .timeslot-row').forEach(row => {
+      timeslots.push({
+        day: row.querySelector('.ts-day').value,
+        time: row.querySelector('.ts-time').value
+      });
+    });
+
+    if (timeslots.length === 0) {
+      return alert(`Please add at least one timeslot for ${entry.querySelector('.subject-name').value}`);
+    }
+
     subjects.push({
       name: entry.querySelector('.subject-name').value,
       startLevel: entry.querySelector('.start-level').value,
-      startDate: entry.querySelector('.start-date').value,
-      timeslot: entry.querySelector('.timeslot').value,
+      startWS: parseInt(entry.querySelector('.start-ws').value) || 0,
       status: entry.querySelector('.status').value,
+      timeslots: timeslots,
       progress: [] 
     });
   });
 
   const studentData = {
-    studentNumber: document.getElementById('studentNumber').value,
+    studentNumber: document.getElementById('studentNumber').value || '', // Optional
     nameEn: document.getElementById('nameEn').value,
     nameCn: document.getElementById('nameCn').value,
     grade: document.getElementById('grade').value,
@@ -151,6 +219,9 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
   }
 
   try {
+    const loader = document.getElementById('loadingOverlay');
+    loader.classList.remove('hidden');
+
     if (isEdit) {
       await set(ref(db, `centers/${centerId}/students/${studentId}`), studentData);
       alert('Student updated successfully!');
@@ -161,5 +232,8 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     window.location.href = 'students.html';
   } catch (err) {
     alert('Error saving student: ' + err.message);
+  } finally {
+    const loader = document.getElementById('loadingOverlay');
+    loader.classList.add('hidden');
   }
 });
