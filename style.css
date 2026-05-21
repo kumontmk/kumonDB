@@ -125,3 +125,29 @@ canvas { max-height: 400px; }
 .loading-container { display: flex; flex-direction: column; align-items: center; }
 .loading-text::after { content: '...'; animation: pulse 1.5s steps(4, end) infinite; }
 @keyframes pulse { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
+
+/* Custom 1-24h Military Time Picker */
+.custom-time-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.custom-time-picker input {
+  width: 3rem;
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 1rem;
+  font-family: monospace;
+}
+.time-sep {
+  font-weight: 700;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+/* Hide number spinners */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none; margin: 0;
+}
+input[type=number] { -moz-appearance: textfield; }
