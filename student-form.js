@@ -11,6 +11,8 @@ const centerId = sessionStorage.getItem('selectedCenter');
 const studentId = new URLSearchParams(window.location.search).get('id');
 const isEdit = !!studentId;
 
+console.log('📝 Form loaded | Center:', centerId, '| Edit mode:', isEdit);
+
 document.getElementById('formTitle').textContent = isEdit ? 'Edit Student' : 'Add Student';
 
 function hideLoader() {
@@ -18,7 +20,7 @@ function hideLoader() {
   if (loader) setTimeout(() => loader.classList.add('hidden'), 300);
 }
 
-// ✅ Load Existing Data if Editing
+// Load existing data if editing
 if (isEdit) {
   loadStudentData();
 } else {
@@ -54,12 +56,13 @@ async function loadStudentData() {
     }
   } catch (err) {
     alert('Error loading student: ' + err.message);
+    console.error(err);
   } finally {
     hideLoader();
   }
 }
 
-// ✅ Add Subject Field
+// Add Subject Field
 function addSubjectField(data = {}) {
   if (subjectCount >= 3) return alert('Maximum 3 subjects allowed');
   
@@ -105,19 +108,16 @@ function addSubjectField(data = {}) {
   if (data.timeslots && data.timeslots.length > 0) {
     data.timeslots.forEach(ts => addTimeslotField(div.querySelector('.timeslots-list'), ts));
   } else {
-    addTimeslotField(div.querySelector('.timeslots-list')); // Add one empty by default
+    addTimeslotField(div.querySelector('.timeslots-list'));
   }
 
-  // ✅ Timeslot Button Handler
   div.querySelector('.add-timeslot-btn').onclick = () => addTimeslotField(div.querySelector('.timeslots-list'));
-
-  // ✅ Remove Subject Handler
+  
   div.querySelector('.remove-subject').onclick = () => {
     div.remove();
     subjectCount--;
   };
 
-  // ✅ ERP/EFL Validation
   div.querySelector('.subject-name').addEventListener('change', (e) => {
     const selected = e.target.value;
     const allSelects = document.querySelectorAll('.subject-name');
@@ -139,7 +139,7 @@ function addSubjectField(data = {}) {
   subjectCount++;
 }
 
-// ✅ Add Timeslot Field
+// Add Timeslot Field
 function addTimeslotField(container, data = {}) {
   const list = container.querySelector('.timeslots-list');
   if (list.children.length >= 6) return alert('Maximum 6 timeslots per subject');
@@ -167,9 +167,17 @@ function addTimeslotField(container, data = {}) {
 
 document.getElementById('addSubjectBtn').onclick = () => addSubjectField();
 
-// ✅ Save Student
+// Save Student - WITH BETTER ERROR HANDLING
 document.getElementById('studentForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+  
+  console.log('💾 Starting save process...');
+  console.log('Center ID:', centerId);
+  
+  if (!centerId) {
+    alert('❌ Error: No center selected. Please go back and select a center.');
+    return;
+  }
   
   const subjects = [];
   document.querySelectorAll('.subject-entry').forEach(entry => {
@@ -196,7 +204,7 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
   });
 
   const studentData = {
-    studentNumber: document.getElementById('studentNumber').value || '', // Optional
+    studentNumber: document.getElementById('studentNumber').value || '',
     nameEn: document.getElementById('nameEn').value,
     nameCn: document.getElementById('nameCn').value,
     grade: document.getElementById('grade').value,
@@ -218,20 +226,29 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     studentData.createdAt = new Date().toISOString();
   }
 
+  console.log('📦 Student data prepared:', studentData);
+
   try {
     const loader = document.getElementById('loadingOverlay');
     loader.classList.remove('hidden');
 
+    const studentsRef = ref(db, `centers/${centerId}/students`);
+    console.log('📍 Saving to path:', `centers/${centerId}/students`);
+
     if (isEdit) {
       await set(ref(db, `centers/${centerId}/students/${studentId}`), studentData);
+      console.log('✅ Student updated');
       alert('Student updated successfully!');
     } else {
-      await push(ref(db, `centers/${centerId}/students`), studentData);
+      const newRef = await push(studentsRef, studentData);
+      console.log('✅ Student added with ID:', newRef.key);
       alert('Student added successfully!');
     }
+    
     window.location.href = 'students.html';
   } catch (err) {
-    alert('Error saving student: ' + err.message);
+    console.error('❌ SAVE ERROR:', err);
+    alert('Error saving student: ' + err.message + '\n\nCheck console for details (F12)');
   } finally {
     const loader = document.getElementById('loadingOverlay');
     loader.classList.add('hidden');

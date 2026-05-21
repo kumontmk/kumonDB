@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
+// ✅ CORRECT Firebase Config (matching your screenshot)
 const firebaseConfig = {
   apiKey: "AIzaSyB1VhQwGotEI8BHt8wp8FvtPpUY5FsI0qA",
   authDomain: "kumondb-f4377.firebaseapp.com",
@@ -16,11 +17,13 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const CORRECT_PASSWORD = "1111";
 
+// Hide loader
 window.addEventListener('DOMContentLoaded', () => {
   const loader = document.getElementById('loadingOverlay');
   if (loader) setTimeout(() => loader.classList.add('hidden'), 300);
 });
 
+// Login handler
 document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const password = document.getElementById('password').value;
@@ -29,25 +32,38 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   if (password === CORRECT_PASSWORD) {
     sessionStorage.setItem('kumonAuth', 'true');
     await initializeCenters();
-    window.location.href = 'centers.html'; // ✅ Changed to centers page
+    window.location.href = 'centers.html';
   } else {
     if (errorMsg) errorMsg.textContent = 'Incorrect password. Please try again.';
   }
 });
 
+// Initialize centers
 async function initializeCenters() {
   try {
     const centersRef = ref(db, 'centers');
     const snapshot = await get(centersRef);
     if (!snapshot.exists()) {
       await set(centersRef, {
-        'kumon-taipa-mei-keng': { id: 'kumon-taipa-mei-keng', name: 'Kumon Taipa Mei Keng', createdAt: new Date().toISOString() },
-        'kumon-taipa-pac-tat': { id: 'kumon-taipa-pac-tat', name: 'Kumon Taipa Pac Tat', createdAt: new Date().toISOString() }
+        'kumon-taipa-mei-keng': { 
+          id: 'kumon-taipa-mei-keng', 
+          name: 'Kumon Taipa Mei Keng', 
+          createdAt: new Date().toISOString() 
+        },
+        'kumon-taipa-pac-tat': { 
+          id: 'kumon-taipa-pac-tat', 
+          name: 'Kumon Taipa Pac Tat', 
+          createdAt: new Date().toISOString() 
+        }
       });
+      console.log('✅ Centers initialized');
     }
-  } catch (err) { console.error('Center init error:', err); }
+  } catch (err) { 
+    console.error('❌ Center init error:', err); 
+  }
 }
 
+// Auth guard
 export function requireAuth() {
   if (sessionStorage.getItem('kumonAuth') !== 'true') {
     window.location.href = 'index.html';
