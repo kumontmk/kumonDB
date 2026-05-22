@@ -1,50 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Students - Kumon DB</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - Kumon DB</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="loadingOverlay" class="loading-overlay">Loading students...</div>
-  
-  <header>
-    <h1>👥 Student Management</h1>
-    <nav>
-      <a href="dashboard.html">← Back</a>
-      <button id="logoutBtn">Logout</button>
-    </nav>
-  </header>
-
-  <main class="students-page">
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search by name, ID, nickname, or school...">
-      <button id="addStudentBtn" class="primary">+ Add Student</button>
+    <div id="page-loader" class="hidden">
+        <div class="spinner"></div>
     </div>
 
-    <div class="report-table">
-      <table id="studentTable">
-          <thead>
-            <tr>
-              <th>Subject</th>
-              <th>Student ID</th>
-              <th>Chinese name</th>
-              <th>Nickname</th>
-              <th>Pinyin name</th>
-              <th>DOB</th>
-              <th>Grade</th>
-              <th>Level</th>
-              <th>Enrol Date</th>
-            </tr>
-          </thead>
-        <tbody id="studentList">
-          <!-- Table rows injected by JS -->
-        </tbody>
-      </table>
-    </div>
-  </main>
+    <header>
+        <h1>👥 Student Management</h1>
+        <nav>
+            <a href="dashboard.html">← Back</a>
+            <button id="logoutBtn">Logout</button>
+        </nav>
+    </header>
 
-  <script type="module" src="students.js"></script>
+    <main class="students-page">
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="🔍 Search by name, ID, grade...">
+            <button id="addStudentBtn" class="primary">+ Add Student</button>
+        </div>
+
+        <div class="sort-panel">
+            <div class="sort-group">
+                <label>📚 Filter Subject:</label>
+                <select id="filter-subject">
+                    <option value="">All Subjects</option>
+                    <option value="Chinese">Chinese</option>
+                    <option value="English ERP">English ERP</option>
+                    <option value="English EFL">English EFL</option>
+                    <option value="Math">Math</option>
+                </select>
+            </div>
+            <div class="sort-group">
+                <label>Primary:</label>
+                <select id="sort1-field">
+                    <option value="">None</option>
+                    <option value="subjectName">Subject</option>
+                    <option value="level">Level</option>
+                    <option value="grade">Grade</option>
+                    <option value="nameCn">Chinese Name</option>
+                    <option value="namePinyin">Pinyin Name</option>
+                    <option value="nickname">Nickname</option>
+                    <option value="studentNumber">Student ID</option>
+                    <option value="dob">DOB</option>
+                    <option value="enrolDate">Enrol Date</option>
+                </select>
+                <select id="sort1-dir"><option value="asc">↑</option><option value="desc">↓</option></select>
+            </div>
+            <div class="sort-group">
+                <label>Secondary:</label>
+                <select id="sort2-field">
+                    <option value="">None</option>
+                    <option value="subjectName">Subject</option>
+                    <option value="level">Level</option>
+                    <option value="grade">Grade</option>
+                    <option value="nameCn">Chinese Name</option>
+                    <option value="namePinyin">Pinyin Name</option>
+                    <option value="nickname">Nickname</option>
+                    <option value="studentNumber">Student ID</option>
+                    <option value="dob">DOB</option>
+                    <option value="enrolDate">Enrol Date</option>
+                </select>
+                <select id="sort2-dir"><option value="asc">↑</option><option value="desc">↓</option></select>
+            </div>
+            <div class="sort-group">
+                <label>Tertiary:</label>
+                <select id="sort3-field">
+                    <option value="">None</option>
+                    <option value="subjectName">Subject</option>
+                    <option value="level">Level</option>
+                    <option value="grade">Grade</option>
+                    <option value="nameCn">Chinese Name</option>
+                    <option value="namePinyin">Pinyin Name</option>
+                    <option value="nickname">Nickname</option>
+                    <option value="studentNumber">Student ID</option>
+                    <option value="dob">DOB</option>
+                    <option value="enrolDate">Enrol Date</option>
+                </select>
+                <select id="sort3-dir"><option value="asc">↑</option><option value="desc">↓</option></select>
+            </div>
+            <button id="clearSortBtn" class="secondary">Reset</button>
+        </div>
+
+        <div class="report-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Student ID</th>
+                        <th>Chinese Name</th>
+                        <th>Nickname</th>
+                        <th>Pinyin Name</th>
+                        <th>DOB</th>
+                        <th>Grade</th>
+                        <th>Level</th>
+                        <th>Enrol Date</th>
+                    </tr>
+                </thead>
+                <tbody id="studentList">
+                    <tr><td colspan="9" class="hint" style="text-align:center;">Loading students...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script type="module" src="students.js"></script>
 </body>
 </html>
