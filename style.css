@@ -751,3 +751,175 @@ label span {
     break-inside: avoid;
   }
 }
+
+/* ============================================
+   📅 ATTENDANCE CONTROLS - INLINE LAYOUT
+   ============================================ */
+.attendance-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  background: var(--white);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.attendance-controls .control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 0 1 auto;
+  min-width: 180px;
+}
+
+.attendance-controls .search-group {
+  flex: 1 1 280px;
+  min-width: 240px;
+}
+
+.attendance-controls .control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.attendance-controls .day-select {
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text);
+}
+
+.attendance-controls .day-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.25);
+}
+
+/* 🔍 SEARCH INPUT WITH ICON + CLEAR BUTTON */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-wrapper .search-icon {
+  position: absolute;
+  left: 0.85rem;
+  font-size: 0.95rem;
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.search-wrapper input {
+  padding: 0.7rem 2.5rem 0.7rem 2.5rem;
+  font-size: 0.95rem;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius);
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.search-wrapper input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.25);
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: #f1f5f9;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+  background: #dc2626;
+  color: white;
+}
+
+/* 📷 SCAN BUTTON */
+.scan-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: var(--primary-dark);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.scan-btn:hover {
+  background: #3a6f94;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(70, 130, 180, 0.3);
+}
+
+.scan-btn:active {
+  transform: translateY(0);
+}
+
+.scan-btn .scan-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Highlight search match in rows */
+.highlight {
+  background: #fef08a;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .attendance-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .attendance-controls .control-group {
+    min-width: 100%;
+  }
+  .scan-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media print {
+  .attendance-controls,
+  header,
+  .delete-att-btn,
+  #page-loader {
+    display: none !important;
+  }
+}

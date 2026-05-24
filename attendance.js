@@ -22,6 +22,12 @@ const subjectCheckboxesDiv = document.getElementById('subjectCheckboxes');
 const confirmBtn = document.getElementById('confirmAttendanceBtn');
 const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
 
+// 🆕 SEARCH ELEMENTS
+const searchInput = document.getElementById('attendanceSearch');
+const clearSearchBtn = document.getElementById('clearSearch');
+const searchResultsCount = document.getElementById('searchResultsCount');
+let searchTerm = '';
+
 dateInput.value = new Date().toISOString().split('T')[0];
 
 let html5QrCode = null;
@@ -72,25 +78,66 @@ function setupAttendanceListener() {
 // 🎨 RENDER FUNCTION (Separates data from DOM for instant cache-sync updates)
 function renderTable() {
     attendanceBody.innerHTML = '';
+    
     if (Object.keys(currentAttendanceData).length === 0) {
         attendanceBody.innerHTML = '<tr><td colspan="9" class="text-center">No attendance records for this day.</td></tr>';
+        if (searchResultsCount) searchResultsCount.classList.add('hidden');
         return;
     }
 
     let rowsHtml = '';
+    let totalRows = 0;
+    let matchedRows = 0;
+
     for (const [studentId, subjects] of Object.entries(currentAttendanceData)) {
         const student = studentsCache[studentId];
         if (!student || typeof subjects !== 'object') continue;
 
         for (const [subjectName, record] of Object.entries(subjects)) {
-            rowsHtml += createAttendanceRowHtml(studentId, subjectName, record);
+            totalRows++;
+            
+            // 🔍 SEARCH FILTER
+            if (searchTerm) {
+                const searchableText = [
+                    student.nameCn,
+                    student.nickname,
+                    student.namePinyin,
+                    student.grade,
+                    student.school,
+                    subjectName
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (!searchableText.includes(searchTerm)) continue;
+            }
+            
+            matchedRows++;
+            rowsHtml += createAttendanceRowHtml(studentId, subjectName, record, searchTerm);
         }
     }
-    attendanceBody.innerHTML = rowsHtml || '<tr><td colspan="9" class="text-center">No records for selected subjects.</td></tr>';
+    
+    if (matchedRows === 0 && totalRows > 0) {
+        attendanceBody.innerHTML = `<tr><td colspan="9" class="text-center">
+            🔍 No students match "<strong>${escapeHtml(searchTerm)}</strong>"
+        </td></tr>`;
+    } else if (matchedRows === 0) {
+        attendanceBody.innerHTML = '<tr><td colspan="9" class="text-center">No records for selected subjects.</td></tr>';
+    } else {
+        attendanceBody.innerHTML = rowsHtml;
+    }
+    
+    // 📊 Show results count when searching
+    if (searchResultsCount) {
+        if (searchTerm) {
+            searchResultsCount.classList.remove('hidden');
+            searchResultsCount.textContent = `Showing ${matchedRows} of ${totalRows} record${totalRows !== 1 ? 's' : ''}`;
+        } else {
+            searchResultsCount.classList.add('hidden');
+        }
+    }
 }
 
 // 📝 GENERATES ROW HTML (Uses CURRENT timeslots for status calculation)
-function createAttendanceRowHtml(studentId, subjectName, record) {
+function createAttendanceRowHtml(studentId, subjectName, record, highlight = '') {
     const student = studentsCache[studentId];
     if (!student) return '';
 
@@ -100,8 +147,9 @@ function createAttendanceRowHtml(studentId, subjectName, record) {
     
     // 🔍 DYNAMIC STATUS: Calculate based on ACTUAL check-in day & CURRENT student timeslot
     const checkInDate = new Date(record.checkInTime);
-    const checkInDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][checkInDate.getDay()];
-    const daySlots = subjObj?.timeslots?.filter(t => t.day === checkInDay) || [];
+    // ✅ FIX: Use full day names to match how they are saved in the database ('Monday', 'Tuesday', etc.)
+    const checkInDayFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][checkInDate.getDay()];
+    const daySlots = subjObj?.timeslots?.filter(t => t.day === checkInDayFull) || [];
     const scheduledTimeForDay = daySlots.length > 0 ? daySlots[0].time : '';
     const status = calculateStatus(scheduledTimeForDay, record.checkInTime);
     
@@ -113,13 +161,20 @@ function createAttendanceRowHtml(studentId, subjectName, record) {
     };
     const { color, icon } = statusConfig[status] || statusConfig['On Time'];
 
+    // 🎨 Highlight matching text
+    const hl = (text) => {
+        if (!highlight || !text) return text || '-';
+        const regex = new RegExp(`(${escapeRegex(highlight)})`, 'gi');
+        return String(text).replace(regex, '<span class="highlight">$1</span>');
+    };
+
     return `
         <tr class="student-row">
-            <td>${subjectName}</td>
-            <td>${student.nameCn || '-'}</td>
-            <td>${student.nickname || '-'}</td>
-            <td>${student.grade || '-'}</td>
-            <td>${student.school || '-'}</td>
+            <td>${hl(subjectName)}</td>
+            <td>${hl(student.nameCn)}</td>
+            <td>${hl(student.nickname)}</td>
+            <td>${hl(student.grade)}</td>
+            <td>${hl(student.school)}</td>
             <td>${scheduledTimes}</td>
             <td>${checkInTime}</td>
             <td style="color: ${color}; font-weight:600;">${icon} ${status}</td>
@@ -133,7 +188,37 @@ function createAttendanceRowHtml(studentId, subjectName, record) {
     `;
 }
 
+// Helper: escape HTML to prevent XSS in search display
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 dateInput.addEventListener('change', setupAttendanceListener);
+
+// 🔍 SEARCH EVENT LISTENERS
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        searchTerm = e.target.value.trim().toLowerCase();
+        if (clearSearchBtn) clearSearchBtn.classList.toggle('hidden', searchTerm === '');
+        renderTable();
+    });
+}
+
+if (clearSearchBtn) {
+    clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchTerm = '';
+        clearSearchBtn.classList.add('hidden');
+        searchInput.focus();
+        renderTable();
+    });
+}
 
 // 🔄 CROSS-TAB SYNC: Refreshes student cache & recalculates statuses when you switch tabs
 window.addEventListener('focus', async () => {
@@ -248,7 +333,8 @@ confirmBtn.addEventListener('click', async () => {
     const date = dateInput.value;
     const now = new Date();
     const currentTime = now.toTimeString().slice(0, 5);
-    const todayDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
+    // ✅ FIX: Use full day names to match database
+    const todayDay = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
 
     confirmBtn.disabled = true; confirmBtn.textContent = 'Saving...';
     try {
