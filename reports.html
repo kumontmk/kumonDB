@@ -28,33 +28,54 @@
     
     <!-- Timetable Section -->
     <section id="timetable" class="report-section active">
-      <div class="controls">
-        <select id="timetableDay">
-          <option value="Mon">Monday</option>
-          <option value="Tue">Tuesday</option>
-          <option value="Wed">Wednesday</option>
-          <option value="Thu">Thursday</option>
-          <option value="Fri">Friday</option>
-          <option value="Sat">Saturday</option>
-        </select>
-        <button id="printTimetable" class="secondary">🖨️ Print</button>
+      <div class="timetable-controls">
+        <div class="control-group">
+          <label for="timetableDay" class="control-label">📅 Select Day</label>
+          <select id="timetableDay" class="day-select">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+        </div>
+        <button id="printTimetable" class="print-btn">
+          <span class="print-icon">🖨️</span>
+          <span class="print-text">Print Timetable</span>
+        </button>
       </div>
       <div id="timetableGrid" class="timetable-grid"></div>
     </section>
     
     <!-- Monthly Report Section -->
     <section id="monthly" class="report-section hidden">
-      <div class="controls">
-        <select id="reportSubject">
-          <option value="all">All Subjects</option>
-          <option value="English ERP">English ERP</option>
-          <option value="English EFL">English EFL</option>
-          <option value="Chinese">Chinese</option>
-          <option value="Math">Math</option>
-        </select>
-        <input type="month" id="reportMonth">
-        <button id="generateReport" class="primary">Generate</button>
-        <button id="printReport" class="secondary">🖨️ Print</button>
+      <div class="timetable-controls">
+        <div class="control-group">
+          <label for="reportSubject" class="control-label">📚 Subject</label>
+          <select id="reportSubject" class="day-select">
+            <option value="all">All Subjects</option>
+            <option value="English ERP">English ERP</option>
+            <option value="English EFL">English EFL</option>
+            <option value="Chinese">Chinese</option>
+            <option value="Math">Math</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="reportMonth" class="control-label">📅 Month</label>
+          <input type="month" id="reportMonth" class="day-select">
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+          <button id="generateReport" class="print-btn" style="background: var(--primary-dark);">
+            <span class="print-icon">📊</span>
+            <span class="print-text">Generate</span>
+          </button>
+          <button id="printReport" class="print-btn">
+            <span class="print-icon">🖨️</span>
+            <span class="print-text">Print Report</span>
+          </button>
+        </div>
       </div>
       <div id="monthlyReport" class="report-table hidden">
         <table>

@@ -617,3 +617,137 @@ label span {
 .subject-entry.subj-EFL label {
   color: #333;
 }
+
+/* ============================================
+   📅 TIMETABLE CONTROLS - INLINE LAYOUT
+   ============================================ */
+.timetable-controls {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  background: var(--white);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.timetable-controls .control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.timetable-controls .control-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-light);
+}
+
+.timetable-controls .day-select {
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius);
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text);
+}
+
+.timetable-controls .day-select:hover {
+  border-color: var(--primary-dark);
+}
+
+.timetable-controls .day-select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.25);
+}
+
+/* 🖨️ PRINT BUTTON - Modern styled */
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: var(--primary-dark);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.print-btn:hover {
+  background: #3a6f94;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(70, 130, 180, 0.3);
+}
+
+.print-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(70, 130, 180, 0.2);
+}
+
+.print-btn .print-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.print-btn .print-text {
+  line-height: 1;
+}
+
+/* 📱 Mobile: Stack vertically */
+@media (max-width: 600px) {
+  .timetable-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .timetable-controls .control-group {
+    max-width: 100%;
+  }
+  
+  .print-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* 🖨️ HIDE PRINT BUTTON WHEN ACTUALLY PRINTING */
+@media print {
+  .timetable-controls,
+  .tabs,
+  header,
+  #page-loader,
+  .tab-btn {
+    display: none !important;
+  }
+  
+  .report-section {
+    display: block !important;
+  }
+  
+  body {
+    background: white;
+  }
+  
+  .timeslot-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+  }
+}
