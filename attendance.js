@@ -22,11 +22,14 @@ const subjectCheckboxesDiv = document.getElementById('subjectCheckboxes');
 const confirmBtn = document.getElementById('confirmAttendanceBtn');
 const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
 
-// 🆕 SEARCH ELEMENTS
+// 🆕 SEARCH & FILTER ELEMENTS
 const searchInput = document.getElementById('attendanceSearch');
 const clearSearchBtn = document.getElementById('clearSearch');
 const searchResultsCount = document.getElementById('searchResultsCount');
+const subjectFilter = document.getElementById('subjectFilter'); // 🆕 New Element
+
 let searchTerm = '';
+let selectedSubject = ''; // 🆕 Store current subject filter
 
 dateInput.value = new Date().toISOString().split('T')[0];
 
@@ -42,12 +45,42 @@ async function initApp() {
         const snap = await get(ref(db, `centers/${centerId}/students`));
         snap.forEach(child => studentsCache[child.key] = child.val());
         console.log(`✅ Cached ${Object.keys(studentsCache).length} students`);
+        
+        // 🆕 Populate Subject Filter after caching
+        populateSubjectFilter();
+        
     } catch (e) {
         console.error('Failed to cache students:', e);
     }
     setupAttendanceListener();
 }
 initApp();
+
+// 🆕 Helper to populate subject dropdown dynamically
+function populateSubjectFilter() {
+    if (!subjectFilter) return;
+    
+    const subjects = new Set();
+    // Extract all unique subject names from cached students
+    Object.values(studentsCache).forEach(student => {
+        if (student.subjects && Array.isArray(student.subjects)) {
+            student.subjects.forEach(sub => {
+                if (sub.name) subjects.add(sub.name);
+            });
+        }
+    });
+
+    // Clear existing options except "All Subjects"
+    subjectFilter.innerHTML = '<option value="">All Subjects</option>';
+    
+    // Sort and append options
+    Array.from(subjects).sort().forEach(subj => {
+        const option = document.createElement('option');
+        option.value = subj;
+        option.textContent = subj;
+        subjectFilter.appendChild(option);
+    });
+}
 
 // 📊 DYNAMIC STATUS CALCULATOR
 function calculateStatus(scheduledTime, checkInISO) {
@@ -94,6 +127,12 @@ function renderTable() {
         if (!student || typeof subjects !== 'object') continue;
 
         for (const [subjectName, record] of Object.entries(subjects)) {
+            
+            // 🆕 Apply Subject Filter
+            if (selectedSubject && subjectName !== selectedSubject) {
+                continue; // Skip this row if it doesn't match the selected subject
+            }
+
             totalRows++;
             
             // 🔍 SEARCH FILTER
@@ -125,11 +164,13 @@ function renderTable() {
         attendanceBody.innerHTML = rowsHtml;
     }
     
-    // 📊 Show results count when searching
+    // 📊 Show results count when searching or filtering
     if (searchResultsCount) {
-        if (searchTerm) {
+        if (searchTerm || selectedSubject) {
             searchResultsCount.classList.remove('hidden');
-            searchResultsCount.textContent = `Showing ${matchedRows} of ${totalRows} record${totalRows !== 1 ? 's' : ''}`;
+            let msg = `Showing ${matchedRows} of ${totalRows} record${totalRows !== 1 ? 's' : ''}`;
+            if (selectedSubject) msg += ` for ${selectedSubject}`;
+            searchResultsCount.textContent = msg;
         } else {
             searchResultsCount.classList.add('hidden');
         }
@@ -220,11 +261,23 @@ if (clearSearchBtn) {
     });
 }
 
+// 🆕 SUBJECT FILTER EVENT LISTENER
+if (subjectFilter) {
+    subjectFilter.addEventListener('change', (e) => {
+        selectedSubject = e.target.value;
+        renderTable();
+    });
+}
+
 // 🔄 CROSS-TAB SYNC: Refreshes student cache & recalculates statuses when you switch tabs
 window.addEventListener('focus', async () => {
     try {
         const snap = await get(ref(db, `centers/${centerId}/students`));
         snap.forEach(child => studentsCache[child.key] = child.val());
+        
+        // 🆕 Re-populate filter in case new subjects were added elsewhere
+        populateSubjectFilter();
+        
         renderTable(); // Instantly reflects edited timeslots
     } catch (e) { console.error('Cache refresh failed:', e); }
 });

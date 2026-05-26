@@ -29,6 +29,43 @@ function showLoader() {
   document.getElementById('page-loader')?.classList.remove('hidden');
 }
 
+// ✅ HANDLE "OTHER" DROPDOWN LOGIC
+function initOtherInputs() {
+  const fields = ['grade', 'school', 'nationality'];
+  
+  fields.forEach(fieldId => {
+    const select = document.getElementById(fieldId);
+    const otherInput = document.getElementById(fieldId + 'Other');
+    
+    if(select && otherInput) {
+      // Check on load (for edit mode)
+      if(select.value === 'Other') {
+        otherInput.classList.add('visible');
+        otherInput.required = true;
+        select.required = false;
+      } else {
+        otherInput.classList.remove('visible');
+        otherInput.required = false;
+        select.required = true;
+      }
+
+      // Listen for changes
+      select.addEventListener('change', () => {
+        if(select.value === 'Other') {
+          otherInput.classList.add('visible');
+          otherInput.focus();
+          otherInput.required = true;
+          select.required = false;
+        } else {
+          otherInput.classList.remove('visible');
+          otherInput.required = false;
+          select.required = true;
+        }
+      });
+    }
+  });
+}
+
 // ✅ REAL-TIME AGE CALCULATION
 function updateAgeDisplay() {
   const bday = document.getElementById('birthday').value;
@@ -156,6 +193,49 @@ window.addEventListener('beforeunload', () => {
   if (html5QrCode && scannerActive) html5QrCode.stop();
 });
 
+// ✅ GENERATE LEVEL OPTIONS BASED ON SUBJECT
+function getLevelOptions(subject, currentValue = '') {
+  let levels = [];
+  
+  if (subject === 'Math') {
+    // 6A down to 2A, then A-O
+    for (let i = 6; i >= 2; i--) levels.push(`${i}A`);
+    const letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
+    levels = levels.concat(letters);
+  } 
+  else if (subject === 'Chinese' || subject === 'English ERP') {
+    // 7A down to 2A
+    for (let i = 7; i >= 2; i--) levels.push(`${i}A`);
+    
+    // AI, AII ... HI, HII, I, II, III, J, K, L
+    const doubleLetters = ['A','B','C','D','E','F','G','H']; 
+    doubleLetters.forEach(l => {
+      levels.push(`${l}I`);
+      levels.push(`${l}II`);
+    });
+    levels.push('I');
+    levels.push('II');
+    levels.push('III');
+    levels.push('J');
+    levels.push('K');
+    levels.push('L');
+  } 
+  else if (subject === 'English EFL') {
+    // 7A down to 2A
+    for (let i = 7; i >= 2; i--) levels.push(`${i}A`);
+    // A to O
+    const letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
+    levels = levels.concat(letters);
+  }
+
+  let optionsHTML = '<option value="">Select Level</option>';
+  levels.forEach(lvl => {
+    const selected = lvl === currentValue ? 'selected' : '';
+    optionsHTML += `<option value="${lvl}" ${selected}>${lvl}</option>`;
+  });
+  return optionsHTML;
+}
+
 // ✅ COLLECT FORM DATA
 function collectFormData() {
   const subjects = [];
@@ -182,15 +262,23 @@ function collectFormData() {
     });
   }
 
+  // Handle "Other" logic for Grade, School, Nationality
+  const getVal = (id) => {
+    const select = document.getElementById(id);
+    const other = document.getElementById(id + 'Other');
+    if (select.value === 'Other' && other) return other.value.trim();
+    return select.value;
+  };
+
   return {
     studentNumber: document.getElementById('studentNumber').value.trim() || '',
     nickname: document.getElementById('nickname').value.trim() || '',
     namePinyin: document.getElementById('namePinyin').value.trim() || '',
     nameCn: document.getElementById('nameCn').value.trim() || '',
-    grade: document.getElementById('grade').value.trim() || '',
-    school: document.getElementById('school').value.trim() || '',
+    grade: getVal('grade'),
+    school: getVal('school'),
     address: document.getElementById('address').value.trim() || '',
-    nationality: document.getElementById('nationality').value.trim() || '',
+    nationality: getVal('nationality'),
     email: document.getElementById('email').value.trim() || '',
     birthday: document.getElementById('birthday').value || '',
     phone: {
@@ -274,6 +362,10 @@ function addSubjectField(data = {}) {
   
   const usedSubjects = getUsedSubjects(div);
   
+  // Generate Initial Level Options (Default to Math if no data, else use data.name)
+  const initialSubject = data.name || 'Math';
+  const levelOptionsHTML = getLevelOptions(initialSubject, data.startLevel);
+
   div.innerHTML = `
     <div class="form-grid">
       <div>
@@ -291,7 +383,9 @@ function addSubjectField(data = {}) {
       </div>
       <div>
         <label>Start Level * ${lockStartHint}</label>
-        <input type="text" class="start-level" placeholder="e.g. 7A" value="${data.startLevel || ''}" required ${lockStart ? 'readonly' : ''}>
+        <select class="start-level subject-level-select" required ${lockStart ? 'disabled' : ''}>
+          ${levelOptionsHTML}
+        </select>
       </div>
       <div>
         <label>Start WS # * ${lockStartHint}</label>
@@ -345,7 +439,15 @@ function addSubjectField(data = {}) {
     });
   };
   
-  div.querySelector('.subject-name').addEventListener('change', (e) => { 
+  const subjectSelect = div.querySelector('.subject-name');
+  const startLevelSelect = div.querySelector('.start-level');
+
+  // Update Levels when Subject Changes
+  subjectSelect.addEventListener('change', (e) => { 
+    const newSubject = e.target.value;
+    // Save current value if possible, otherwise reset
+    const currentLevel = startLevelSelect.value;
+    startLevelSelect.innerHTML = getLevelOptions(newSubject, ''); 
     validateConflict(e.target); 
     renderSchedule();
     updateSubjectEntry(div);
@@ -533,9 +635,42 @@ async function loadStudentData() {
     const snap = await get(ref(db, `centers/${centerId}/students/${studentId}`));
     if (snap.exists()) {
       const s = snap.val();
-      ['studentNumber','nickname','namePinyin','nameCn','grade','school','nationality','email','address'].forEach(id => {
+      
+      // Helper to set "Other" fields
+      const setFieldWithOther = (id, value) => {
+        const select = document.getElementById(id);
+        const otherInput = document.getElementById(id + 'Other');
+        
+        // Check if value exists in select options
+        let found = false;
+        for(let i=0; i<select.options.length; i++) {
+          if(select.options[i].value === value) {
+            found = true;
+            break;
+          }
+        }
+        
+        if(found) {
+          select.value = value;
+          if(otherInput) otherInput.classList.remove('visible');
+        } else {
+          select.value = 'Other';
+          if(otherInput) {
+            otherInput.value = value;
+            otherInput.classList.add('visible');
+          }
+        }
+      };
+
+      ['studentNumber','nickname','namePinyin','nameCn','email','address'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value = s[id] || '';
       });
+
+      // Handle Special Dropdowns
+      if(s.grade) setFieldWithOther('grade', s.grade);
+      if(s.school) setFieldWithOther('school', s.school);
+      if(s.nationality) setFieldWithOther('nationality', s.nationality);
+
       document.getElementById('birthday').value = s.birthday || '';
       if (s.qrCode) qrInput.value = s.qrCode;
       if (s.phone) {
@@ -692,5 +827,6 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
 });
 
 // Initialize
+initOtherInputs(); // ✅ Initialize Other Inputs Logic
 if (isEdit) loadStudentData();
 else { addSubjectField(); hideLoader(); }

@@ -17,92 +17,179 @@
   </header>
 
   <main class="form-container">
-    <!-- 1. Basic Information -->
-    <section class="general-info">
-      <h2>📝 Basic Information</h2>
-      <div class="form-grid">
-        <div><label>Student Number</label><input type="text" id="studentNumber"></div>
-        <div><label>Nickname</label><input type="text" id="nickname"></div>
-        <div><label>Name in Pin Yin (拼音名)</label><input type="text" id="namePinyin"></div>
-        <div><label>Full Name (Chinese)</label><input type="text" id="nameCn" required></div>
-        <div><label>Grade</label><input type="text" id="grade"></div>
-        <div><label>School</label><input type="text" id="school"></div>
-        <div><label>Birthday</label><input type="date" id="birthday"></div>
-        <div><label>Age (Auto)</label><input type="text" id="ageDisplay" readonly></div>
-        <div><label>Nationality</label><input type="text" id="nationality"></div>
-        <div><label>Overall Status (Auto)</label><input type="text" id="overallStatus" readonly></div>
+    <form id="studentForm">
+      <!-- 1. Basic Information -->
+      <section class="general-info">
+        <h2>📝 Basic Information</h2>
+        <div class="form-grid">
+          <div><label>Student Number</label><input type="text" id="studentNumber"></div>
+          <div><label>Nickname</label><input type="text" id="nickname"></div>
+          <div><label>Name in Pin Yin (拼音名)</label><input type="text" id="namePinyin"></div>
+          <div><label>Full Name (Chinese)</label><input type="text" id="nameCn" required></div>
+          
+          <!-- ✅ UPDATED GRADE DROPDOWN -->
+          <div>
+            <label>Grade</label>
+            <div class="select-wrapper">
+              <select id="grade" required>
+                <option value="">Select Grade</option>
+                <option value="K0">K0</option>
+                <option value="K1">K1</option>
+                <option value="K2">K2</option>
+                <option value="K3">K3</option>
+                <option value="P1">P1</option>
+                <option value="P2">P2</option>
+                <option value="P3">P3</option>
+                <option value="P4">P4</option>
+                <option value="P5">P5</option>
+                <option value="P6">P6</option>
+                <option value="F1">F1</option>
+                <option value="F2">F2</option>
+                <option value="F3&Up">F3 & Up</option>
+              </select>
+              <input type="text" id="gradeOther" class="other-input" placeholder="Enter Grade">
+            </div>
+          </div>
+
+          <!-- ✅ UPDATED SCHOOL DROPDOWN -->
+          <div>
+            <label>School</label>
+            <div class="select-wrapper">
+              <select id="school" required>
+                <option value="">Select School</option>
+                <option value="聯國SON">聯國 SON</option>
+                <option value="培華PUI WA">培華 PUI WA</option>
+                <option value="培道幼稚園POOI TO">培道幼稚園 POOI TO</option>
+                <option value="婦聯小白兔托兒所Creche da Associacao Geral">婦聯小白兔托兒所 Creche</option>
+                <option value="氹仔坊衆學校 FONG CHONG">氹仔坊衆學校 FONG CHONG</option>
+                <option value="澳大附小幼稚園ASUM">澳大附小幼稚園 ASUM</option>
+                <option value="濠江英才幼稚園HKP">濠江英才幼稚園 HKP</option>
+                <option value="澳門三育 SAMYUK">澳門三育 SAMYUK</option>
+                <option value="聖公會中學MAC">聖公會中學 MAC</option>
+                <option value="澳門國際學校TIS">澳門國際學校 TIS</option>
+                <option value="澳門葡文學校EPM">澳門葡文學校 EPM</option>
+                <option value="庇道學校BRITO">庇道學校 BRITO</option>
+                <option value="氹仔中葡學校LUSO-TAIPA">氹仔中葡學校 LUSO-TAIPA</option>
+                <option value="聖保祿學校Escola São Paulo">聖保祿學校 Escola São Paulo</option>
+                <option value="澳門粵華中學YUET WA">澳門粵華中學 YUET WA</option>
+                <option value="鮑思高DON BOSCO">鮑思高 DON BOSCO</option>
+                <option value="二龍喉公立學校Escola Oficial da Flora">二龍喉公立學校 Escola Oficial</option>
+                <option value="聖羅撒女子中學Santa Rosa de Lima">聖羅撒女子中學 Santa Rosa</option>
+                <option value="嘉諾撒聖心中學Sacred Heart">嘉諾撒聖心中學 Sacred Heart</option>
+                <option value="澳門浸信中學MBC">澳門浸信中學 MBC</option>
+                <option value="濠江中學Hou Kong">濠江中學 Hou Kong</option>
+                <option value="教業中學KAO YIP">教業中學 KAO YIP</option>
+                <option value="鏡平學校Keang Peng">鏡平學校 Keang Peng</option>
+                <option value="澳門嶺南中學Ling Nam">澳門嶺南中學 Ling Nam</option>
+                <option value="化地瑪聖母女子學校Fatima">化地瑪聖母女子學校 Fatima</option>
+                <option value="東南學校Tong Nam">東南學校 Tong Nam</option>
+                <option value="勞工子弟學校The Workers' Children">勞工子弟學校 The Workers'</option>
+                <option value="澳門慈幼中學IS">澳門慈幼中學 IS</option>
+                <option value="聖公會蔡高中學Sheng Kung Hui Perpetual">聖公會蔡高中學 Sheng Kung Hui</option>
+                <option value="Other">Other...</option>
+              </select>
+              <input type="text" id="schoolOther" class="other-input" placeholder="Enter School Name">
+            </div>
+          </div>
+
+          <div><label>Birthday</label><input type="date" id="birthday"></div>
+          <div><label>Age (Auto)</label><input type="text" id="ageDisplay" readonly></div>
+          
+          <!-- ✅ UPDATED NATIONALITY DROPDOWN -->
+          <div>
+            <label>Nationality</label>
+            <div class="select-wrapper">
+              <select id="nationality" required>
+                <option value="">Select Nationality</option>
+                <option value="Chinese 中國籍">Chinese 中國籍</option>
+                <option value="Portuguese 葡萄牙籍">Portuguese 葡萄牙籍</option>
+                <option value="British 英國籍">British 英國籍</option>
+                <option value="USA 美國籍">USA 美國籍</option>
+                <option value="Canadian 加拿大籍">Canadian 加拿大籍</option>
+                <option value="French 法國籍">French 法國籍</option>
+                <option value="Japanese 日本籍">Japanese 日本籍</option>
+                <option value="Korean 韓國籍">Korean 韓國籍</option>
+                <option value="Philippines 菲律賓籍">Philippines 菲律賓籍</option>
+                <option value="Irish 愛爾蘭籍">Irish 愛爾蘭籍</option>
+                <option value="Taiwan 台灣籍">Taiwan 台灣籍</option>
+                <option value="Brazil 巴西籍">Brazil 巴西籍</option>
+                <option value="Other">Other...</option>
+              </select>
+              <input type="text" id="nationalityOther" class="other-input" placeholder="Enter Nationality">
+            </div>
+          </div>
+
+          <div><label>Overall Status (Auto)</label><input type="text" id="overallStatus" readonly></div>
+        </div>
+      </section>
+
+      <!-- 2. QR Code (Before Tabs) -->
+      <section class="qr-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: var(--radius); border: 1px solid #e2e8f0;">
+        <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📷 Student QR Code</h3>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+          <input type="text" id="qrCodeInput" placeholder="Scan or enter manually" style="flex:1; min-width:200px;">
+          <button type="button" id="startScannerBtn" class="secondary">📷 Scan QR</button>
+        </div>
+        <div id="qr-reader" style="margin-top:0.5rem; display:none;"></div>
+        <div id="qr-status" class="hint"></div>
+      </section>
+
+      <!-- 3. Tab Navigation -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="contact">📞 Contact Info</button>
+        <button class="tab-btn" data-tab="subjects">📚 Subjects (Max 3)</button>
+        <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
       </div>
-    </section>
 
-    <!-- 2. QR Code (Before Tabs) -->
-    <section class="qr-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: var(--radius); border: 1px solid #e2e8f0;">
-      <h3 style="margin: 0 0 0.5rem; font-size: 1rem;">📷 Student QR Code</h3>
-      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="qrCodeInput" placeholder="Scan or enter manually" style="flex:1; min-width:200px;">
-        <button type="button" id="startScannerBtn" class="secondary">📷 Scan QR</button>
+      <!-- 4. Tab Content: Contact -->
+      <div id="tab-contact" class="tab-content active">
+        <div class="form-grid">
+          <div><label>Email</label><input type="email" id="email"></div>
+          <div><label>Phone (Mom)</label><input type="tel" id="phoneMom"></div>
+          <div><label>Phone (Dad)</label><input type="tel" id="phoneDad"></div>
+          <div><label>Phone (Student)</label><input type="tel" id="phoneOwn"></div>
+          <div style="grid-column: 1 / -1;"><label>Address</label><textarea id="address" rows="2"></textarea></div>
+        </div>
       </div>
-      <div id="qr-reader" style="margin-top:0.5rem; display:none;"></div>
-      <div id="qr-status" class="hint"></div>
-    </section>
 
-    <!-- 3. Tab Navigation -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="contact">📞 Contact Info</button>
-      <button class="tab-btn" data-tab="subjects">📚 Subjects (Max 3)</button>
-      <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
-    </div>
-
-    <!-- 4. Tab Content: Contact -->
-    <div id="tab-contact" class="tab-content active">
-      <div class="form-grid">
-        <div><label>Email</label><input type="email" id="email"></div>
-        <div><label>Phone (Mom)</label><input type="tel" id="phoneMom"></div>
-        <div><label>Phone (Dad)</label><input type="tel" id="phoneDad"></div>
-        <div><label>Phone (Student)</label><input type="tel" id="phoneOwn"></div>
-        <div style="grid-column: 1 / -1;"><label>Address</label><textarea id="address" rows="2"></textarea></div>
+      <!-- 5. Tab Content: Subjects -->
+      <div id="tab-subjects" class="tab-content">
+        <p class="hint">⚠️ English ERP & EFL cannot be together unless one is Dropped. Max 6 timeslots per subject.</p>
+        <div id="subjectsContainer"></div>
+        <button type="button" id="addSubjectBtn" class="secondary" style="margin-top:0.5rem;">+ Add Subject</button>
       </div>
-    </div>
 
-    <!-- 5. Tab Content: Subjects -->
-    <div id="tab-subjects" class="tab-content">
-      <p class="hint">⚠️ English ERP & EFL cannot be together unless one is Dropped. Max 6 timeslots per subject.</p>
-      <div id="subjectsContainer"></div>
-      <button type="button" id="addSubjectBtn" class="secondary" style="margin-top:0.5rem;">+ Add Subject</button>
-    </div>
-
-    <!-- 6. Tab Content: Schedule -->
-    <div id="tab-schedule" class="tab-content">
-      <p class="hint">📅 Schedule auto-generates from subject timeslots. Dropped subjects are hidden.</p>
-      <table class="schedule-table" id="scheduleTable">
-        <thead>
-          <tr id="scheduleHeader">
-            <!-- Dynamic header rendered by JS -->
-          </tr>
-        </thead>
-        <tbody id="scheduleBody">
-          <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:#666;">Add subjects & timeslots to view schedule</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- ✅ Actions - Clean Grouped Layout -->
-    <div class="form-actions" style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
-      <!-- Left Group: Save & Cancel -->
-      <div style="display:flex; gap:0.75rem;">
-        <button type="submit" id="saveBtn" class="primary" form="studentForm">💾 Save Student</button>
-        <a href="students.html" class="secondary" style="padding:0.75rem 1.5rem; text-decoration:none; color:white; border-radius:var(--radius); display:inline-flex; align-items:center; justify-content:center; background:#6c757d;">Cancel</a>
+      <!-- 6. Tab Content: Schedule -->
+      <div id="tab-schedule" class="tab-content">
+        <p class="hint">📅 Schedule auto-generates from subject timeslots. Dropped subjects are hidden.</p>
+        <table class="schedule-table" id="scheduleTable">
+          <thead>
+            <tr id="scheduleHeader">
+              <!-- Dynamic header rendered by JS -->
+            </tr>
+          </thead>
+          <tbody id="scheduleBody">
+            <tr><td colspan="7" style="text-align:center; padding:1.5rem; color:#666;">Add subjects & timeslots to view schedule</td></tr>
+          </tbody>
+        </table>
       </div>
-      
-      <!-- Right Group: Transfer & Delete -->
-      <div style="display:flex; gap:0.75rem; margin-left:auto;">
-        <button type="button" id="transferBtn" class="secondary" style="display:none;">🔄 Transfer</button>
-        <button type="button" id="deleteBtn" class="danger" style="display:none;">🗑️ Delete</button>
+
+      <!-- ✅ Actions - Clean Grouped Layout -->
+      <div class="form-actions" style="margin-top:1.5rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+        <!-- Left Group: Save & Cancel -->
+        <div style="display:flex; gap:0.75rem;">
+          <button type="submit" id="saveBtn" class="primary">💾 Save Student</button>
+          <a href="students.html" class="secondary" style="padding:0.75rem 1.5rem; text-decoration:none; color:white; border-radius:var(--radius); display:inline-flex; align-items:center; justify-content:center; background:#6c757d;">Cancel</a>
+        </div>
+        
+        <!-- Right Group: Transfer & Delete -->
+        <div style="display:flex; gap:0.75rem; margin-left:auto;">
+          <button type="button" id="transferBtn" class="secondary" style="display:none;">🔄 Transfer</button>
+          <button type="button" id="deleteBtn" class="danger" style="display:none;">🗑️ Delete</button>
+        </div>
       </div>
-    </div>
+    </form>
   </main>
-  
-  <!-- Hidden form for submit handler -->
-  <form id="studentForm" style="display:none;"></form>
 
   <!-- Transfer Modal -->
   <div id="transferModal" class="modal hidden">
