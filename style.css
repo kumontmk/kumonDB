@@ -470,77 +470,84 @@ label span { font-weight: 400; font-size: 0.8rem; color: #999; margin-left: 0.25
   .timeslot-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
 }
 
-/* 📅 TIMETABLE TABLE STYLING - ULTRA TIGHT */
-#timetableTable {
-width: 100%;
-border-collapse: collapse;
-font-size: 0.85rem;
-background: var(--white);
-table-layout: fixed;
-}
-#timetableTable th, #timetableTable td {
-border: 1px solid #e2e8f0;
-padding: 2px 3px; /* ✅ 1mm padding - ultra tight */
-text-align: center;
-vertical-align: middle;
-line-height: 1.1; /* ✅ Tight line height */
-}
-#timetableTable th {
-background: var(--primary);
-color: var(--white);
-font-weight: 600;
-padding: 3px 4px; /* ✅ Slightly more for headers */
-}
+/* 📅 TIMETABLE TABLE STYLING - ULTRA TIGHT (Consolidated) */
+  #timetableTable {
+    width: 100%;
+    border: 2px solid #333;
+    font-size: 0.75rem;
+    table-layout: auto;
+  }
+
+  #timetableTable th, #timetableTable td {
+    border: 1px solid #333 !important;
+    padding: 1px 2px !important;
+    line-height: 1.1 !important;
+    color: #000 !important;
+  }
+
+  #timetableTable th {
+    background: #eee !important;
+    font-weight: 700 !important;
+  }
+
+  .time-cell { background: #eee !important; }
+  .empty-cell { background: transparent !important; }
+
+
 /* Subject Header Colors */
 .th-math { background: #008B8B !important; }
 .th-english { background: #DC143C !important; }
 .th-chinese { background: #9ACD32 !important; color: #333 !important; }
-.time-cell {
-font-weight: 600;
-background: #f8f9fa;
-width: 80px;
-border-right: 2px solid #cbd5e1;
-}
-.empty-cell {
-background: #fafafa;
-}
-/* Hover effect */
-#timetableTable tbody tr:hover {
-background-color: #f1f5f9;
-}
-/* 🖨️ PRINT STYLES FOR TIMETABLE */
-@media print {
-.tabs, .timetable-controls, header, #page-loader { display: none !important; }
-.report-section { display: block !important; }
-body { background: white; margin: 0; padding: 0.5cm; }
-#timetableTable {
-font-size: 0.75rem;
-width: 100%;
-border: 2px solid #333;
-}
-#timetableTable th, #timetableTable td {
-  border: 1px solid #e2e8f0;
-  padding: 1px 2px;          /* ✅ ~1mm padding */
-  line-height: 1.1;          /* ✅ Removes extra vertical space */
-  text-align: center;
-  vertical-align: middle;
-  font-size: 0.82rem;        /* ✅ Slightly smaller to fit tightly */
-}
-
-#timetableTable th {
-  background: var(--primary);
-  color: var(--white);
-  font-weight: 600;
-  padding: 4px 2px;          /* ✅ Headers get slightly more room */
-  line-height: 1.2;
-}
 
 .time-cell {
   font-weight: 600;
   background: #f8f9fa;
-  width: 75px;
-  border-right: 2px solid #cbd5e1;
+  width: 80px;
+  border-right: 1px solid #cbd5e1;
 }
-.empty-cell {
-  background: #fafafa;
+
+.empty-cell { background: #fafafa; }
+#timetableTable tbody tr:hover { background-color: #f1f5f9; }
+
+/* 🖨️ PRINT STYLES - CHINESE FIX & TIGHT LAYOUT */
+/* 🖨️ PRINT STYLES - CHINESE FIX & TIGHT LAYOUT */
+@media print {
+  .tabs, .timetable-controls, header, #page-loader, .report-section, .delete-att-btn { display: none !important; }
+  
+  /* ✅ FIXED: Added '*' selector to globally enforce CJK fonts during print */
+  *, *::before, *::after {
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'SimSun', 'PingFang SC', 'Hiragino Sans GB', 'Segoe UI', sans-serif !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    background: white;
+    margin: 0;
+    padding: 0.5cm;
+  }
+
+  #timetableTable {
+    width: 100%;
+    border: 2px solid #333;
+    font-size: 0.75rem;
+    table-layout: auto;
+  }
+
+  #timetableTable th, #timetableTable td {
+    border: 1px solid #333 !important;
+    padding: 1px 2px !important;
+    line-height: 1.1 !important;
+    color: #000 !important;
+  }
+
+  #timetableTable th {
+    background: #eee !important;
+    font-weight: 700 !important;
+  }
+
+  .time-cell { background: #eee !important; }
+  .empty-cell { background: transparent !important; }
 }
+
