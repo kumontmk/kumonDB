@@ -134,11 +134,10 @@
         <div id="qr-status" class="hint"></div>
       </section>
 
-      <!-- 3. Tab Navigation -->
       <div class="tabs">
-        <button class="tab-btn active" data-tab="contact">📞 Contact Info</button>
-        <button class="tab-btn" data-tab="subjects">📚 Subjects (Max 3)</button>
-        <button class="tab-btn" data-tab="schedule">📅 Schedule</button>
+        <button type="button" class="tab-btn active" data-tab="contact">📞 Contact Info</button>
+        <button type="button" class="tab-btn" data-tab="subjects">📚 Subjects (Max 3)</button>
+        <button type="button" class="tab-btn" data-tab="schedule">📅 Schedule</button>
       </div>
 
       <!-- 4. Tab Content: Contact -->
@@ -179,7 +178,8 @@
         <!-- Left Group: Save & Cancel -->
         <div style="display:flex; gap:0.75rem;">
           <button type="submit" id="saveBtn" class="primary">💾 Save Student</button>
-          <a href="students.html" class="secondary" style="padding:0.75rem 1.5rem; text-decoration:none; color:white; border-radius:var(--radius); display:inline-flex; align-items:center; justify-content:center; background:#6c757d;">Cancel</a>
+          <!-- Changed from <a> to <button> to allow JS confirmation -->
+          <button type="button" id="cancelBtn" class="secondary" style="padding:0.75rem 1.5rem; text-decoration:none; color:white; border-radius:var(--radius); display:inline-flex; align-items:center; justify-content:center; background:#6c757d; border:none; cursor:pointer;">Cancel</button>
         </div>
         
         <!-- Right Group: Transfer & Delete -->

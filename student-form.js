@@ -4,9 +4,18 @@ import { ref, push, set, get, remove } from "https://www.gstatic.com/firebasejs/
 
 if (!requireAuth()) {}
 
-const SUBJECTS = ['Math', 'Chinese', 'English ERP', 'English EFL'];
+// 1. Updated SUBJECTS to split Chinese
+const SUBJECTS = ['Math', 'Chinese (Trad)', 'Chinese (Simp)', 'English ERP', 'English EFL'];
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const SUBJECT_COLORS = { 'Math': 'subj-Math', 'Chinese': 'subj-Chinese', 'English ERP': 'subj-ERP', 'English EFL': 'subj-EFL' };
+
+// 2. Updated COLORS to map both Chinese variants to the same green class
+const SUBJECT_COLORS = { 
+    'Math': 'subj-Math', 
+    'Chinese (Trad)': 'subj-Chinese', 
+    'Chinese (Simp)': 'subj-Chinese', 
+    'English ERP': 'subj-ERP', 
+    'English EFL': 'subj-EFL' 
+};
 
 let subjectCount = 0;
 let html5QrCode = null;
@@ -93,19 +102,28 @@ function updateOverallStatus() {
   overall.value = allDrop ? 'Drop' : (hasCurrent ? 'Current' : 'Pause');
 }
 
-// ✅ TAB SWITCHING
+// ✅ TAB SWITCHING - UI ONLY (NO change detection, validation, or saves)
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault(); // 🔒 Block accidental form submission if button is inside <form>
+    e.stopPropagation(); // 🔒 Prevent event bubbling
+    
+    // Pure UI switch - zero data operations
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    
     btn.classList.add('active');
     const targetId = `tab-${btn.dataset.tab}`;
     document.getElementById(targetId)?.classList.add('active');
+    
+    // Only render schedule when explicitly switching to Schedule tab
     if (btn.dataset.tab === 'schedule') renderSchedule();
+    
+    // ✅ CONFIRM: No collectFormData(), no validation, no prompts here
   });
 });
 
-// ✅ SCHEDULE RENDERER - Dynamic header + body
+// ✅ SCHEDULE RENDERER - Dynamic header + body (UI-only visual update)
 function renderSchedule() {
   const thead = document.getElementById('scheduleHeader');
   const tbody = document.getElementById('scheduleBody');
@@ -139,6 +157,7 @@ function renderSchedule() {
     schedule[day].sort((a,b) => a.time.localeCompare(b.time)).forEach(slot => {
       const pill = document.createElement('span');
       pill.className = `slot-pill ${slot.color}`;
+      // Display first 3 chars of subject (e.g., "Chi" for Chinese (Trad))
       pill.textContent = `${slot.name.substring(0,3)} ${slot.time}`;
       td.appendChild(pill);
     });
@@ -189,6 +208,7 @@ if (scanBtn) {
     }
   });
 }
+// ✅ Only stop scanner on page unload - NO change warnings
 window.addEventListener('beforeunload', () => {
   if (html5QrCode && scannerActive) html5QrCode.stop();
 });
@@ -198,22 +218,17 @@ function getLevelOptions(subject, currentValue = '') {
   let levels = [];
   
   if (subject === 'Math') {
-    // 6A down to 2A, then A-O
     for (let i = 6; i >= 2; i--) levels.push(`${i}A`);
     const letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
     levels = levels.concat(letters);
   } 
-  else if (subject === 'Chinese' || subject === 'English ERP') {
-    // 7A down to 2A
+  else if (subject.includes('Chinese') || subject === 'English ERP') {
     for (let i = 7; i >= 2; i--) levels.push(`${i}A`);
-    
-    // AI, AII ... HI, HII, I, II, III, J, K, L
     const doubleLetters = ['A','B','C','D','E','F','G','H']; 
     doubleLetters.forEach(l => {
       levels.push(`${l}I`);
       levels.push(`${l}II`);
     });
-    levels.push('I');
     levels.push('II');
     levels.push('III');
     levels.push('J');
@@ -221,9 +236,7 @@ function getLevelOptions(subject, currentValue = '') {
     levels.push('L');
   } 
   else if (subject === 'English EFL') {
-    // 7A down to 2A
     for (let i = 7; i >= 2; i--) levels.push(`${i}A`);
-    // A to O
     const letters = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O'];
     levels = levels.concat(letters);
   }
@@ -236,7 +249,7 @@ function getLevelOptions(subject, currentValue = '') {
   return optionsHTML;
 }
 
-// ✅ COLLECT FORM DATA
+// ✅ COLLECT FORM DATA (ONLY called on Save/Cancel)
 function collectFormData() {
   const subjects = [];
   for (const entry of document.querySelectorAll('.subject-entry')) {
@@ -262,7 +275,6 @@ function collectFormData() {
     });
   }
 
-  // Handle "Other" logic for Grade, School, Nationality
   const getVal = (id) => {
     const select = document.getElementById(id);
     const other = document.getElementById(id + 'Other');
@@ -361,8 +373,6 @@ function addSubjectField(data = {}) {
   const lockDiagHint = lockDiagnostic ? '<span style="color:#999;font-weight:400;font-size:0.8rem">(Locked)</span>' : '';
   
   const usedSubjects = getUsedSubjects(div);
-  
-  // Generate Initial Level Options (Default to Math if no data, else use data.name)
   const initialSubject = data.name || 'Math';
   const levelOptionsHTML = getLevelOptions(initialSubject, data.startLevel);
 
@@ -442,10 +452,8 @@ function addSubjectField(data = {}) {
   const subjectSelect = div.querySelector('.subject-name');
   const startLevelSelect = div.querySelector('.start-level');
 
-  // Update Levels when Subject Changes
   subjectSelect.addEventListener('change', (e) => { 
     const newSubject = e.target.value;
-    // Save current value if possible, otherwise reset
     const currentLevel = startLevelSelect.value;
     startLevelSelect.innerHTML = getLevelOptions(newSubject, ''); 
     validateConflict(e.target); 
@@ -494,6 +502,14 @@ function validateConflict(currentSelect) {
     if (['English ERP', 'English EFL'].includes(s.value)) {
       if (otherStatus !== 'drop' && currentStatus !== 'drop') {
         alert('English ERP & EFL cannot be together unless one is Dropped.');
+        currentSelect.value = ''; 
+        return;
+      }
+    }
+
+    if (selected.includes('Chinese') && s.value.includes('Chinese')) {
+      if (otherStatus !== 'drop' && currentStatus !== 'drop') {
+        alert('Please select only one type of Chinese (Traditional or Simplified).');
         currentSelect.value = ''; 
         return;
       }
@@ -554,7 +570,6 @@ function addTimeslotField(timeslotsList, data = {}) {
     if (parts.length === 2) { h = parts[0]; m = parts[1]; }
   }
   
-  // Optional: Warn if loading conflicting data from DB
   if (data.day && data.time) {
     const parts = data.time.split(':');
     if (parts.length === 2) {
@@ -591,7 +606,6 @@ function addTimeslotField(timeslotsList, data = {}) {
   const hourSelect = row.querySelector('.ts-hour');
   const minSelect = row.querySelector('.ts-min');
   
-  // ✅ Conflict checker
   function checkConflict() {
     const d = daySelect.value;
     const h = hourSelect.value;
@@ -636,12 +650,10 @@ async function loadStudentData() {
     if (snap.exists()) {
       const s = snap.val();
       
-      // Helper to set "Other" fields
       const setFieldWithOther = (id, value) => {
         const select = document.getElementById(id);
         const otherInput = document.getElementById(id + 'Other');
         
-        // Check if value exists in select options
         let found = false;
         for(let i=0; i<select.options.length; i++) {
           if(select.options[i].value === value) {
@@ -666,7 +678,6 @@ async function loadStudentData() {
         const el = document.getElementById(id); if(el) el.value = s[id] || '';
       });
 
-      // Handle Special Dropdowns
       if(s.grade) setFieldWithOther('grade', s.grade);
       if(s.school) setFieldWithOther('school', s.school);
       if(s.nationality) setFieldWithOther('nationality', s.nationality);
@@ -692,6 +703,7 @@ async function loadStudentData() {
       }
       updateAgeDisplay();
       updateOverallStatus();
+      // ✅ Capture original state ONLY on load - used for Save/Cancel comparison
       originalFormData = collectFormData();
     }
   } catch (err) { alert('Error loading student: ' + err.message); } finally { hideLoader(); }
@@ -764,7 +776,7 @@ if(confirmTransferBtn) {
   };
 }
 
-// ✅ SUBMIT HANDLER
+// ✅ SUBMIT HANDLER - ONLY place where change detection & saving happens
 document.getElementById('studentForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!centerId) return alert('Error: No center selected.');
@@ -797,6 +809,7 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     if (hasConflict) return; 
   }
 
+  // ✅ CHANGE DETECTION: Only runs on explicit Save click
   const currentFormData = collectFormData();
   if (isEdit && JSON.stringify(currentFormData) === JSON.stringify(originalFormData)) {
     return alert('ℹ️ No changes have been made.');
@@ -826,7 +839,17 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
   } finally { hideLoader(); }
 });
 
+// ✅ CANCEL BUTTON LOGIC - ONLY place where discard prompt happens
+const cancelBtn = document.getElementById('cancelBtn');
+if (cancelBtn) {
+  cancelBtn.addEventListener('click', () => {
+    if (confirm('Discard changes and go back to student list?')) {
+      window.location.href = 'students.html';
+    }
+  });
+}
+
 // Initialize
-initOtherInputs(); // ✅ Initialize Other Inputs Logic
+initOtherInputs();
 if (isEdit) loadStudentData();
 else { addSubjectField(); hideLoader(); }
