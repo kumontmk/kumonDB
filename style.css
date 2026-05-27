@@ -133,8 +133,8 @@ button:hover { opacity: 0.9; }
 /* ✅ Student List */
 .students-page {
   padding: 1.5rem 2rem;
-  max-width: 1400px;
-  width: 96%;
+  max-width: 1700px;
+  width: 99%;
   margin: 0 auto;
 }
 .controls {

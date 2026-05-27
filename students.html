@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students - Kumon DB</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
     <div id="page-loader" class="hidden">
@@ -20,10 +21,28 @@
     </header>
 
     <main class="students-page">
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="🔍 Search by name, ID, grade...">
-            <button id="addStudentBtn" class="primary">+ Add Student</button>
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="🔍 Search by name, ID, or school..." />
+        <button id="addStudentBtn" class="primary">+ Add Student</button>
+        <!-- ✅ NEW: Import Excel Button -->
+        <button id="importBtn" class="secondary">📥 Import Excel</button>
+        <button id="exportBtn" class="secondary">📤 Export Excel</button>
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display:none;">
+    </div>
+
+        <!-- 📊 Import Progress Modal -->
+    <div id="importProgressModal" class="modal hidden">
+        <div class="modal-content">
+            <span id="closeImportModal" style="cursor:pointer;">&times;</span>
+            <h2>📊 Importing Students...</h2>
+            <p id="importStatus" style="margin: 1rem 0;">Reading file...</p>
+            <progress id="importProgressBar" value="0" max="100" style="width:100%; height: 20px;"></progress>
+            <p class="hint">⏳ Please wait. Do not close this window.</p>
         </div>
+    </div>
+
+    <!-- ✅ REQUIRED: SheetJS Library for XLSX Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
         <div class="sort-panel">
             <div class="sort-group">
@@ -108,7 +127,7 @@
             </table>
         </div>
     </main>
-
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script type="module" src="students.js"></script>
 </body>
 </html>

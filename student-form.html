@@ -37,15 +37,19 @@
                 <option value="K1">K1</option>
                 <option value="K2">K2</option>
                 <option value="K3">K3</option>
-                <option value="P1">P1</option>
-                <option value="P2">P2</option>
-                <option value="P3">P3</option>
-                <option value="P4">P4</option>
-                <option value="P5">P5</option>
-                <option value="P6">P6</option>
-                <option value="F1">F1</option>
-                <option value="F2">F2</option>
-                <option value="F3&Up">F3 & Up</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+                <option value="13">13</option>
               </select>
               <input type="text" id="gradeOther" class="other-input" placeholder="Enter Grade">
             </div>
@@ -199,6 +203,15 @@
       <p style="margin:0.5rem 0; color:var(--text-light);">Select target center:</p>
       <select id="targetCenterSelect" style="width:100%; padding:0.75rem; border:1px solid #ddd; border-radius:8px; margin-top:0.5rem;"></select>
       <button id="confirmTransferBtn" class="primary" style="margin-top:1rem; width:100%;">Confirm Transfer</button>
+    </div>
+  </div>
+
+  <!-- ✅ NEW: Validation Error Modal -->
+  <div id="errorModal" class="modal hidden">
+    <div class="modal-content" style="max-width:400px; text-align:center;">
+      <h3 style="color:#dc3545; margin-bottom:0.5rem;">⚠️ Validation Error</h3>
+      <p id="errorMessage" style="margin-bottom:1.5rem; line-height:1.5;"></p>
+      <button id="closeErrorModal" class="primary">OK</button>
     </div>
   </div>
 
