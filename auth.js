@@ -1,7 +1,7 @@
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-// ✅ CLEANED CONFIG (Zero trailing spaces)
+// ✅ CORRECT Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyB1VhQwGotEI8BHt8wp8FvtPpUY5FsI0qA",
   authDomain: "kumondb-f4377.firebaseapp.com",
@@ -13,14 +13,11 @@ const firebaseConfig = {
   measurementId: "G-EY7L54FTS1"
 };
 
-// ✅ SAFE INIT (Prevents app/duplicate-app error)
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const CORRECT_PASSWORD = "1111";
 
-console.log("🔌 Firebase ready:", app.name);
-
-// Loader
+// ✅ FIX: ID changed to 'page-loader' to match your CSS
 window.addEventListener('DOMContentLoaded', () => {
   const loader = document.getElementById('page-loader');
   if (loader) setTimeout(() => loader.classList.add('hidden'), 300);
@@ -41,36 +38,20 @@ document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
   }
 });
 
-// ✅ ADDITIVE CENTER INITIALIZATION
+// Initialize centers
 async function initializeCenters() {
   try {
     const centersRef = ref(db, 'centers');
     const snapshot = await get(centersRef);
-    const currentCenters = snapshot.exists() ? snapshot.val() : {};
-
-    const newCenters = {
-      'kumon-taipa-mei-keng': { id: 'kumon-taipa-mei-keng', name: 'Kumon Taipa Mei Keng', createdAt: new Date().toISOString() },
-      'kumon-taipa-pac-tat': { id: 'kumon-taipa-pac-tat', name: 'Kumon Taipa Pac Tat', createdAt: new Date().toISOString() },
-      'kumon-tap-siac':      { id: 'kumon-tap-siac',      name: 'Kumon Tap Siac',      createdAt: new Date().toISOString() },
-      'kumon-champs':        { id: 'kumon-champs',        name: 'Kumon Champs',        createdAt: new Date().toISOString() }
-    };
-
-    // Only queue centers that don't already exist
-    const updates = {};
-    for (const [key, val] of Object.entries(newCenters)) {
-      if (!currentCenters[key]) {
-        updates[key] = val;
-      }
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await update(centersRef, updates);
-      console.log("✅ Added to Firebase:", Object.keys(updates));
-    } else {
-      console.log("ℹ️ All centers already exist in DB.");
+    if (!snapshot.exists()) {
+      await set(centersRef, {
+        'kumon-taipa-mei-keng': { id: 'kumon-taipa-mei-keng', name: 'Kumon Taipa Mei Keng', createdAt: new Date().toISOString() },
+        'kumon-taipa-pac-tat': { id: 'kumon-taipa-pac-tat', name: 'Kumon Taipa Pac Tat', createdAt: new Date().toISOString() }
+      });
+      console.log('✅ Centers initialized');
     }
   } catch (err) {
-    console.error("❌ Firebase Error:", err);
+    console.error('❌ Center init error:', err);
   }
 }
 

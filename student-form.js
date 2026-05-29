@@ -731,17 +731,27 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     
     // ✅ 1. Explicit Contact Info Validation
     const contactChecks = [
-        { id: 'studentNumber', label: 'Student Number' },
+        { id: 'nameCn', label: 'Full Name (Chinese)' },
         { id: 'birthday', label: 'Birthday' },
         { id: 'grade', label: 'Grade' },
         { id: 'school', label: 'School' },
         { id: 'nationality', label: 'Nationality' }
     ];
+
     for (const check of contactChecks) {
         const el = document.getElementById(check.id);
         const otherEl = document.getElementById(check.id + 'Other');
         const val = el?.value === 'Other' ? otherEl?.value?.trim() : el?.value?.trim();
         if (!val) return showError(`⚠️ "${check.label}" is required.`);
+    }
+
+    // ✅ Check for at least one phone number (Mom, Dad, or Own)
+    const phoneMom = document.getElementById('phoneMom')?.value.trim();
+    const phoneDad = document.getElementById('phoneDad')?.value.trim();
+    const phoneOwn = document.getElementById('phoneOwn')?.value.trim();
+
+    if (!phoneMom && !phoneDad && !phoneOwn) {
+        return showError('⚠️ At least one Phone Number (Mom, Dad, or Own) is required.');
     }
 
     // ✅ Parent Orientation Validation
@@ -800,10 +810,24 @@ document.getElementById('studentForm').addEventListener('submit', async (e) => {
     if (isEdit && JSON.stringify(currentFormData) === JSON.stringify(originalFormData)) return showError('ℹ️ No changes made.');
 
     const studentData = { ...currentFormData, updatedAt: new Date().toISOString() };
-    if (!isEdit) {
-        studentData.createdAt = new Date().toISOString();
-        const now = new Date();
-        studentData.lastGradeUpdateYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+    if (isEdit) {
+        const snap = await get(ref(db, `centers/${centerId}/students/${studentId}`));
+        if (snap.exists()) {
+            const existingData = snap.val();
+            // Handle both array and object formats Firebase might use
+            const oldSubjects = Array.isArray(existingData.subjects) 
+                ? existingData.subjects 
+                : Object.values(existingData.subjects || {});
+                
+            studentData.subjects = studentData.subjects.map(newSub => {
+                const oldSub = oldSubjects.find(s => s.name === newSub.name);
+                // If the subject exists in DB and has progress, keep it
+                if (oldSub && Array.isArray(oldSub.progress)) {
+                    return { ...newSub, progress: oldSub.progress };
+                }
+                return newSub;
+            });
+        }
     }
     
     try {
